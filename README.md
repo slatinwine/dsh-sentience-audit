@@ -1,6 +1,6 @@
 # dsh-sentience-audit
 
-[![CI](https://github.com/yourorg/dsh-sentience-audit/actions/workflows/ci.yml/badge.svg)](https://github.com/yourorg/dsh-sentience-audit/actions/workflows/ci.yml)
+[![CI](https://github.com/slatinwine/dsh-sentience-audit/actions/workflows/ci.yml/badge.svg)](https://github.com/slatinwine/dsh-sentience-audit/actions/workflows/ci.yml)
 [![license: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](./LICENSE)
 
 Audit a [DeepSeek Harness](https://github.com/deepseek-ai/deepseek-harness) session against the
@@ -77,7 +77,7 @@ identifiers repeat across a codebase, so a whole-file rewrite can share almost
 every token while being an entirely different attempt.
 
 ```ts
-import { approachChanged } from '@yourorg/dsh-sentience-audit'
+import { approachChanged } from '@slatinwine/dsh-sentience-audit'
 
 approachChanged('{"a":1,"b":2}', '{"b":2,"a":1}')   // false — same payload
 approachChanged('{"content":"A"}', '{"content":"B"}') // true  — real change
@@ -106,7 +106,7 @@ described at the end of this section.
 ### npm (recommended)
 
 ```sh
-dsh plugin --profile my-profile add @yourorg/dsh-sentience-audit
+dsh plugin --profile my-profile add @slatinwine/dsh-sentience-audit
 dsh --profile my-profile --dump-config     # confirm the sentience-audit row is present
 ```
 
@@ -120,13 +120,13 @@ A tarball works the same way if you would rather not use a registry:
 
 ```sh
 npm pack                                   # author side, in the package
-dsh plugin --profile my-profile add ./yourorg-dsh-sentience-audit-0.1.0.tgz
+dsh plugin --profile my-profile add ./slatinwine-dsh-sentience-audit-0.1.0.tgz
 ```
 
 ### From Git (source, opt-in)
 
 ```sh
-dsh plugin --profile my-profile add github:yourorg/dsh-sentience-audit#<sha>
+dsh plugin --profile my-profile add github:slatinwine/dsh-sentience-audit#<sha>
 ```
 
 A Git install fetches **sources, not built artifacts**, and pnpm ≥ 10 refuses to
@@ -135,7 +135,7 @@ and names the package key to copy into the profile's `pnpm-workspace.yaml`:
 
 ```yaml
 allowBuilds:
-  '@yourorg/dsh-sentience-audit': true
+  '@slatinwine/dsh-sentience-audit': true
 ```
 
 Re-run the `add` afterwards. **Treat that allowance as permission to execute this
@@ -152,7 +152,7 @@ session should gain the tool:
 
 ```yaml
 - id: sentience-audit
-  name: '@yourorg/dsh-sentience-audit'
+  name: '@slatinwine/dsh-sentience-audit'
 ```
 
 The plugin declares `inject: ['sessions']` and reads `tools` and `agents` optionally. If the
@@ -187,7 +187,7 @@ Result (abridged):
 Or programmatically:
 
 ```ts
-import { assess } from '@yourorg/dsh-sentience-audit'
+import { assess } from '@slatinwine/dsh-sentience-audit'
 
 const result = assess({ sessionId: 'session-1', events })
 console.log(result.level, result.levelLabel)   // 3, 'L3 · 全局工作空间'

@@ -56,7 +56,7 @@ Windows、macOS、Linux 都支持。分析器里有三处与平台相关，每�
 标识符在代码库里本就反复出现，一次整文件重写可能共享几乎所有 token，却是完全不同的尝试。
 
 ```ts
-import { approachChanged } from '@yourorg/dsh-sentience-audit'
+import { approachChanged } from '@slatinwine/dsh-sentience-audit'
 
 approachChanged('{"a":1,"b":2}', '{"b":2,"a":1}')   // false —— 同一负载
 approachChanged('{"content":"A"}', '{"content":"B"}') // true  —— 真实改变
@@ -81,7 +81,7 @@ Git 路径留给想跟着源码走的人，代价是一次显式放行；见本�
 ### npm（推荐）
 
 ```sh
-dsh plugin --profile my-profile add @yourorg/dsh-sentience-audit
+dsh plugin --profile my-profile add @slatinwine/dsh-sentience-audit
 dsh --profile my-profile --dump-config     # 确认 sentience-audit 这一行存在
 ```
 
@@ -93,13 +93,13 @@ dsh --profile my-profile --dump-config     # 确认 sentience-audit 这一行存
 
 ```sh
 npm pack                                   # 作者侧，在包目录内执行
-dsh plugin --profile my-profile add ./yourorg-dsh-sentience-audit-0.1.0.tgz
+dsh plugin --profile my-profile add ./slatinwine-dsh-sentience-audit-0.1.0.tgz
 ```
 
 ### 从 Git 安装（源码路径，需显式放行）
 
 ```sh
-dsh plugin --profile my-profile add github:yourorg/dsh-sentience-audit#<sha>
+dsh plugin --profile my-profile add github:slatinwine/dsh-sentience-audit#<sha>
 ```
 
 Git 安装取到的是**源码而非构建产物**，而 pnpm ≥ 10 在显式放行前拒绝运行依赖的构建脚本。
@@ -107,7 +107,7 @@ Git 安装取到的是**源码而非构建产物**，而 pnpm ≥ 10 在显式�
 
 ```yaml
 allowBuilds:
-  '@yourorg/dsh-sentience-audit': true
+  '@slatinwine/dsh-sentience-audit': true
 ```
 
 然后重跑 `add`。**请把这次放行理解为「允许该包在安装时于你机器上执行代码」**，
@@ -121,7 +121,7 @@ allowBuilds:
 
 ```yaml
 - id: sentience-audit
-  name: '@yourorg/dsh-sentience-audit'
+  name: '@slatinwine/dsh-sentience-audit'
 ```
 
 插件声明 `inject: ['sessions']`，并以可选方式读取 `tools` 与 `agents`。若部署没有工具注册表，
@@ -143,7 +143,7 @@ sentience_audit({ sessionId: "..." })   # 审计另一段实时会话
 或以代码调用：
 
 ```ts
-import { assess } from '@yourorg/dsh-sentience-audit'
+import { assess } from '@slatinwine/dsh-sentience-audit'
 
 const result = assess({ sessionId: 'session-1', events })
 console.log(result.level, result.levelLabel)   // 3, 'L3 · 全局工作空间'

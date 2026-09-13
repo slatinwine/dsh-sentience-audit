@@ -46,7 +46,7 @@ Windows、macOS、Linux 都支持，包内没有任何平台专属内容：无�
 ### 推荐：从 npm 安装
 
 ```sh
-dsh plugin --profile my-profile add @yourorg/dsh-sentience-audit
+dsh plugin --profile my-profile add @slatinwine/dsh-sentience-audit
 dsh --profile my-profile --dump-config
 ```
 
@@ -56,7 +56,7 @@ dsh --profile my-profile --dump-config
 
 ```yaml
 - id: sentience-audit
-  name: '@yourorg/dsh-sentience-audit'
+  name: '@slatinwine/dsh-sentience-audit'
 ```
 
 如果包装上了但这一行没出现，说明 `dsh.bundle` 声明没解析成功——见[排错 b](#b-装了但没有出现插件行)。
@@ -73,7 +73,7 @@ dsh --profile my-profile
 
 ```sh
 npm pack                                   # 在包目录内执行
-dsh plugin --profile my-profile add ./yourorg-dsh-sentience-audit-0.1.0.tgz
+dsh plugin --profile my-profile add ./slatinwine-dsh-sentience-audit-0.1.0.tgz
 ```
 
 ### alternative：从 Git 安装
@@ -84,11 +84,11 @@ dsh plugin --profile my-profile add ./yourorg-dsh-sentience-audit-0.1.0.tgz
 
 ```yaml
 allowBuilds:
-  '@yourorg/dsh-sentience-audit': true
+  '@slatinwine/dsh-sentience-audit': true
 ```
 
 然后重跑 `add`。**这次放行意味着「允许本包在安装时于你机器上执行代码」**，
-它运行在 agent 所用沙箱之外。建议钉住 commit（`github:yourorg/dsh-sentience-audit#<sha>`），
+它运行在 agent 所用沙箱之外。建议钉住 commit（`github:slatinwine/dsh-sentience-audit#<sha>`），
 以免之后一次 push 悄悄改变实际执行内容。除非确实需要源码，否则请优先用 npm。
 
 ### 本地开发：用覆盖层直接加载
@@ -200,7 +200,7 @@ sentience_audit()
 引擎就是普通导出，所以你可以评估手上已有的事件列表——不需要实时会话，也不需要调工具：
 
 ```ts
-import { assess, renderMarkdown } from '@yourorg/dsh-sentience-audit'
+import { assess, renderMarkdown } from '@slatinwine/dsh-sentience-audit'
 
 const result = assess({ sessionId: 'session-1', events })
 console.log(result.level, result.levelLabel)
@@ -228,7 +228,7 @@ for (const indicator of result.indicators) {
 ```yaml
 - insert:
     - id: sentience-audit
-      name: '@yourorg/dsh-sentience-audit'
+      name: '@slatinwine/dsh-sentience-audit'
 ```
 
 前提是该包对 profile 可解析。这是 `dsh plugin add` 所做事情的等价手工版。
@@ -238,7 +238,7 @@ for (const indicator of result.indicators) {
 说明 manifest 里的 `dsh.bundle.patch` 没解析成功。检查装好的副本：
 
 ```sh
-node -e "const p=require('@yourorg/dsh-sentience-audit/package.json'); console.log(p.dsh, p.files)"
+node -e "const p=require('@slatinwine/dsh-sentience-audit/package.json'); console.log(p.dsh, p.files)"
 ```
 
 `dsh.bundle.patch` 必须是 `./cordis.patch.yml`，且该文件必须列在 `files` 里，否则打包时会丢。
@@ -258,8 +258,8 @@ node -e "const p=require('@yourorg/dsh-sentience-audit/package.json'); console.l
 只有当包对客户端扫描可见、且 `./client` 构建产物存在时，客户端半边才会被发现。两项都查：
 
 ```sh
-node -e "const p=require('@yourorg/dsh-sentience-audit/package.json'); console.log(p.dsh?.client, p.exports['./client'])"
-ls node_modules/@yourorg/dsh-sentience-audit/lib/client/
+node -e "const p=require('@slatinwine/dsh-sentience-audit/package.json'); console.log(p.dsh?.client, p.exports['./client'])"
+ls node_modules/@slatinwine/dsh-sentience-audit/lib/client/
 ```
 
 如果提示 `client bundle not found`，说明发布的包里缺 `lib/client/`——它由 `npm run build` 生成，
@@ -268,7 +268,7 @@ ls node_modules/@yourorg/dsh-sentience-audit/lib/client/
 ## 9. 卸载
 
 ```sh
-dsh plugin --profile my-profile remove @yourorg/dsh-sentience-audit
+dsh plugin --profile my-profile remove @slatinwine/dsh-sentience-audit
 ```
 
 这会同时移除依赖与组合层。若想保留包但撤下工具，改为在 profile 的补丁文件里禁用该行：

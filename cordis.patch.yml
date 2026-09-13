@@ -14,4 +14,4 @@
 
 - insert:
     - id: sentience-audit
-      name: '@yourorg/dsh-sentience-audit'
+      name: '@slatinwine/dsh-sentience-audit'

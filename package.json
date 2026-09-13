@@ -1,5 +1,5 @@
 {
-  "name": "@yourorg/dsh-sentience-audit",
+  "name": "@slatinwine/dsh-sentience-audit",
   "version": "0.1.0",
   "description": "Audit a DeepSeek Harness session against the 14 consciousness indicator properties of Butlin, Long, Elmoznino, Bengio et al. (2023) and report an L1-L5 level",
   "type": "module",
@@ -9,7 +9,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/yourorg/dsh-sentience-audit.git"
+    "url": "git+https://github.com/slatinwine/dsh-sentience-audit.git"
   },
   "main": "lib/index.js",
   "types": "lib/types/index.d.ts",

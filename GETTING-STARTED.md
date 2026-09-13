@@ -54,7 +54,7 @@ matters and how each is handled.
 ### Recommended: install from npm
 
 ```sh
-dsh plugin --profile my-profile add @yourorg/dsh-sentience-audit
+dsh plugin --profile my-profile add @slatinwine/dsh-sentience-audit
 dsh --profile my-profile --dump-config
 ```
 
@@ -65,7 +65,7 @@ layer containing one row. **Confirm the row appears** in the dump:
 
 ```yaml
 - id: sentience-audit
-  name: '@yourorg/dsh-sentience-audit'
+  name: '@slatinwine/dsh-sentience-audit'
 ```
 
 If the package installs but no such row appears, the `dsh.bundle` declaration did
@@ -83,7 +83,7 @@ Same prebuilt artifact, no registry involved:
 
 ```sh
 npm pack                                   # in the package checkout
-dsh plugin --profile my-profile add ./yourorg-dsh-sentience-audit-0.1.0.tgz
+dsh plugin --profile my-profile add ./slatinwine-dsh-sentience-audit-0.1.0.tgz
 ```
 
 ### Alternative: install from Git
@@ -95,12 +95,12 @@ to copy into the profile's `pnpm-workspace.yaml`:
 
 ```yaml
 allowBuilds:
-  '@yourorg/dsh-sentience-audit': true
+  '@slatinwine/dsh-sentience-audit': true
 ```
 
 Re-run the `add`. **That allowance is permission to execute this package's code on
 your machine at install time**, outside any sandbox the agent runs under. Pin a
-commit (`github:yourorg/dsh-sentience-audit#<sha>`) so a later push cannot change
+commit (`github:slatinwine/dsh-sentience-audit#<sha>`) so a later push cannot change
 what runs. Prefer npm unless you specifically need the source.
 
 ### Local development: load it with an overlay
@@ -234,7 +234,7 @@ The engine is an ordinary export, so you can audit an event list you already
 have — no live session, no tool call:
 
 ```ts
-import { assess, renderMarkdown } from '@yourorg/dsh-sentience-audit'
+import { assess, renderMarkdown } from '@slatinwine/dsh-sentience-audit'
 
 const result = assess({ sessionId: 'session-1', events })
 console.log(result.level, result.levelLabel)
@@ -265,7 +265,7 @@ patch file — `$DSH_HOME/profiles/<profile>/cordis.patch.yml`:
 ```yaml
 - insert:
     - id: sentience-audit
-      name: '@yourorg/dsh-sentience-audit'
+      name: '@slatinwine/dsh-sentience-audit'
 ```
 
 The package must be resolvable from the profile. This is the manual equivalent
@@ -276,7 +276,7 @@ of what `dsh plugin add` maintains.
 The manifest's `dsh.bundle.patch` did not resolve. Check the installed copy:
 
 ```sh
-node -e "const p=require('@yourorg/dsh-sentience-audit/package.json'); console.log(p.dsh, p.files)"
+node -e "const p=require('@slatinwine/dsh-sentience-audit/package.json'); console.log(p.dsh, p.files)"
 ```
 
 `dsh.bundle.patch` must be `./cordis.patch.yml` and that file must be listed in
@@ -302,8 +302,8 @@ The client half is discovered only if the package is visible to the client
 scanner and its `./client` build exists. Check both:
 
 ```sh
-node -e "const p=require('@yourorg/dsh-sentience-audit/package.json'); console.log(p.dsh?.client, p.exports['./client'])"
-ls node_modules/@yourorg/dsh-sentience-audit/lib/client/
+node -e "const p=require('@slatinwine/dsh-sentience-audit/package.json'); console.log(p.dsh?.client, p.exports['./client'])"
+ls node_modules/@slatinwine/dsh-sentience-audit/lib/client/
 ```
 
 If announcements mention `client bundle not found`, the published package is
@@ -312,7 +312,7 @@ missing `lib/client/` — `npm run build` writes it, and `prepack` runs that bui
 ## 9. Uninstall
 
 ```sh
-dsh plugin --profile my-profile remove @yourorg/dsh-sentience-audit
+dsh plugin --profile my-profile remove @slatinwine/dsh-sentience-audit
 ```
 
 That removes both the dependency and the composition layer. To withdraw the tool

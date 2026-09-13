@@ -60,7 +60,7 @@ jobs:
           npm init -y > /dev/null
           npm install --no-audit --no-fund --cache "$RUNNER_TEMP/npm-cache" "$GITHUB_WORKSPACE/$TGZ"
           node -e "
-            const { assess, RUBRIC } = require('@yourorg/dsh-sentience-audit')
+            const { assess, RUBRIC } = require('@slatinwine/dsh-sentience-audit')
             const result = assess({ sessionId: 'smoke', events: [] })
             if (RUBRIC.length !== 14) throw new Error('rubric size changed')
             if (result.level !== 1) throw new Error('empty session should be L1')
