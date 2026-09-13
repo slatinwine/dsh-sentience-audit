@@ -46,4 +46,7 @@ both the npm route and Git installs.
 
 **Tests.** Four suites, 97 assertions, no test framework required: engine
 invariants, platform parity, built-artifact contract, and argument
-discrimination. CI runs them on Ubuntu, macOS and Windows across Node 20 and 22.
+discrimination. CI runs them on Ubuntu, macOS and Windows across Node 22 and 24 —
+Node 22.18+ is the floor because the suites are TypeScript run directly by Node
+through type stripping. The published package is compiled JavaScript and still
+runs on Node 20.

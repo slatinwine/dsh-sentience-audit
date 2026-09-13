@@ -9,7 +9,7 @@
  *   2. Case matters on POSIX (`A.ts` and `a.ts` are two files) but not on Windows.
  *   3. Both PowerShell and POSIX shell probes count as observing produced output.
  *
- *   node --experimental-strip-types tests/platform.ts
+ *   node tests/platform.ts
  */
 
 import { assess, pathTokens } from '../src/index.ts'

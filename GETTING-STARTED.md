@@ -42,7 +42,11 @@ disagree. Nothing calls a model, and nothing leaves your machine.
 
 Windows, macOS and Linux are all supported, and nothing in the package is
 platform-specific: no native modules, no shell scripts, no install-time build.
-`npm test` runs on all three with plain Node — no PowerShell required.
+The published `lib/` is compiled JavaScript, so **Node ≥ 20** is enough to use it.
+
+Running the test suites is a separate matter: they are TypeScript executed
+directly by Node through type stripping, which needs **Node ≥ 22.18.0**. That is a
+development-toolchain floor, not a runtime one.
 
 The analyzer reads paths from the trace, so a session audited on macOS produces
 the same numbers as the same session audited on Windows. See

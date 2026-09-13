@@ -173,22 +173,29 @@ console.log(result.level, result.levelLabel)   // 3, 'L3 · 全局工作空间'
 
 ## 开发
 
+跑测试套件需要 **Node ≥ 22.18.0**。发布出去的包是编译后的 JavaScript，只需 Node ≥ 20；
+更高的下限是**测试套件**的——它们是 TypeScript，由 Node 的类型剥离直接执行。
+
 ```sh
 npm install
 npm run build            # 编译 Host（tsconfig.json）与 Client（tsconfig.client.json）
-npm run typecheck        # 两半边类型检查，不产出
-npm test                 # 引擎不变量 + 运行时契约验证
+npm run typecheck        # Host、Client、测试三份配置
+npm test                 # 引擎不变量 + 平台一致性 + 运行时契约
+npm run verify:pack      # 校验包可发布、可安装
 npm run test:vitest      # 同一套引擎用例改用 Vitest 运行
 ```
 
-`npm test` 跑两个套件：
+`npm test` 跑四个套件：
 
 - **`tests/run.ts`** —— 引擎不变量（29 条断言），其中最关键的一条是：纯文字轨迹必须判为 L1、满足指标为 0。
+- **`tests/platform.ts`** —— Windows/macOS/Linux 一致性（24 条断言）：POSIX 轨迹必须产生与 Windows 轨迹相同的信号、
+  POSIX 观测动词算作探针、大小写跟随文件系统。
 - **`tests/contract.mjs`** —— 针对**已构建**的 `lib/` 运行，因此走的是真实的 `defineTool` DSL 校验器与真实模块图：
   schema 在运行时被接受、工具能对假会话跑通完整审计、会话解析支持显式 id 与执行中的 agent、
   两者都没有时给出可读错误，`apply()` 能经工具注册表注册并在没有注册表时安全降级。
+- **`tests/discrimination.mjs`** —— 「真恢复 vs 机械重试」的判别规则（16 条断言）。
 
-源码之间用显式 `.ts` 扩展名互相引用，因此能用 `node --experimental-strip-types` 直接运行。
+源码之间用显式 `.ts` 扩展名互相引用，因此 Node 能直接运行。
 `tsc` 的 `rewriteRelativeImportExtensions` 会把说明符在**JavaScript** 产物里改写为 `.js`，
 但**不会**处理生成的 `.d.ts`，所以 `scripts/fix-declarations.mjs` 对 `lib/types/**` 做同样的改写。
 少了这一步，发布出去的声明文件会指向 `./core/types.ts`，消费者的 TypeScript 无法解析；

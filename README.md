@@ -220,15 +220,20 @@ schema cannot be verified from its transcript.
 
 ## Development
 
+Requires **Node ≥ 22.18.0** to run the suites. The published package is compiled
+JavaScript and needs only Node ≥ 20; the higher floor is for the TypeScript test
+suites, which Node runs directly through type stripping.
+
 ```sh
 npm install
 npm run build            # compiles host (tsconfig.json) and client (tsconfig.client.json)
-npm run typecheck        # both halves, no emit
-npm test                 # engine invariants + runtime contract verification
-npm run test:vitest      # the same engine suite under Vitest
+npm run typecheck        # host, client, and test configs
+npm test                 # engine invariants + platform parity + runtime contract
+npm run verify:pack      # checks the package is publishable and installable
+npm run test:vitest      # the same engine cases under Vitest
 ```
 
-`npm test` runs two suites:
+`npm test` runs four suites:
 
 - **`tests/run.ts`** — engine invariants (29 assertions), including the one that
   matters most: a prose-only trajectory must score L1 with zero satisfied
@@ -242,20 +247,20 @@ npm run test:vitest      # the same engine suite under Vitest
   resolution works from an explicit id, from the executing agent, and fails with
   a teaching error when neither is available, and `apply()` registers through a
   tool registry while degrading safely without one.
+- **`tests/discrimination.mjs`** — the recovery-versus-retry rule (16 assertions).
 
-Sources import each other with explicit `.ts` extensions, which lets
-`node --experimental-strip-types` run them directly. `tsc`'s
-`rewriteRelativeImportExtensions` rewrites those specifiers to `.js` in the
-emitted JavaScript, but **not** in the generated `.d.ts` files — so
+Sources import each other with explicit `.ts` extensions, which lets Node run them
+directly. `tsc`'s `rewriteRelativeImportExtensions` rewrites those specifiers to
+`.js` in the emitted JavaScript, but **not** in the generated `.d.ts` files — so
 `scripts/fix-declarations.mjs` performs the same rewrite on `lib/types/**`. Without
 it the published declarations would point at `./core/types.ts`, which a consumer's
 TypeScript cannot resolve; that breakage stays hidden as long as `skipLibCheck` is
 on, which is exactly why the build does the rewrite instead of relying on it.
 
-Both test suites run without a test framework, which is what makes them usable in a
+The suites run without a test framework, which is what makes them usable in a
 constrained environment; `test:vitest` is there for a normal shell.
 
-`prepack` builds automatically, so `npm publish` cannot ship a stale or missing
+`prepare` builds automatically, so `npm publish` cannot ship a stale or missing
 `lib/`.
 
 ## Limitations

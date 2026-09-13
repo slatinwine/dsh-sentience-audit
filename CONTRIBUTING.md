@@ -46,16 +46,24 @@ npm test             # engine + contract + discrimination suites
 npm run verify:pack  # packs for real and checks the tarball's contents
 ```
 
-Node ≥ 20. Nothing else is required — no pnpm, no shell scripts, no native
-modules. The suites run on plain Node using its built-in TypeScript support, so
-they work in constrained environments where installing a test framework is not
-possible. `npm run test:vitest` runs the same engine cases under Vitest if you
-prefer a reporter.
+Node ≥ 22.18.0 to run the suites, and Node ≥ 20 to *use* the package. Nothing
+else is required — no pnpm, no shell scripts, no native modules.
+
+That version split is deliberate and worth understanding before you hit it. The
+published `lib/` is compiled JavaScript and runs on Node 20 or later. The test
+suites are TypeScript executed directly by Node through **type stripping**, which
+needs **v22.18.0 or later** — below that Node requires `--experimental-strip-types`,
+and v20 has no type stripping at all.
+
+The suites need no test framework, which is what makes them runnable in
+constrained environments where installing one is not possible.
+`npm run test:vitest` runs the same engine cases under Vitest if you prefer a
+reporter.
 
 ## What CI checks
 
 `.github/workflows/ci.yml` runs the suites on **Ubuntu, macOS and Windows** across
-Node 20 and 22. That matrix is not decoration: path case handling, shell tool
+Node 22 and 24. That matrix is not decoration: path case handling, shell tool
 names and read-back probe verbs all differ per platform, and `tests/platform.ts`
 exists to pin them. A change that only passes on Linux is not done.
 

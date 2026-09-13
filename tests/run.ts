@@ -1,12 +1,12 @@
 /**
  * Zero-dependency test runner.
  *
- * Run with Node's built-in TypeScript support:
+ * Run with Node's built-in type stripping (Node >= 22.18.0):
  *
- *   node --experimental-strip-types tests/run.ts
+ *   node tests/run.ts
  *
  * This exists so the engine can be verified without installing anything. Once
- * dependencies are installed, `npm test` runs the Vitest suite instead.
+ * dependencies are installed, `npm test` runs every suite.
  */
 
 import { assess } from '../src/core/assess.ts'

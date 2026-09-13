@@ -2,7 +2,7 @@
  * Rewrite `.ts` / `.tsx` specifiers to `.js` inside emitted declaration files.
  *
  * Why this exists: sources use explicit `.ts` extensions so Node can run them
- * directly via `--experimental-strip-types`, and `rewriteRelativeImportExtensions`
+ * directly through its built-in type stripping, and `rewriteRelativeImportExtensions`
  * makes `tsc` rewrite those specifiers in the **JavaScript** output. That option
  * does not touch declaration files, so `lib/types/**\/*.d.ts` would otherwise
  * ship `from './core/types.ts'` — which a consumer's TypeScript cannot resolve
