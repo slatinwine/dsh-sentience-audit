@@ -84,11 +84,14 @@ npm pack                                   # 在包目录内执行
 dsh plugin --profile my-profile add ./slatinwine-dsh-sentience-audit-0.1.0.tgz
 ```
 
-### alternative：从 npm 安装（发布之后）
+### alternative：从 npm 安装（仅当将来真的发布到 registry 时）
 
 ```sh
 dsh plugin --profile my-profile add @slatinwine/dsh-sentience-audit
 ```
+
+对 DSH bundle 来说，发布到 registry 是可选的，本包并未发布。上面每一条路径都
+**不需要 npm 账号、不需要 registry、不需要登录**。
 
 ### alternative：从 Git 安装
 

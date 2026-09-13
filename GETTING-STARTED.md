@@ -96,11 +96,14 @@ npm pack                                   # in the package checkout
 dsh plugin --profile my-profile add ./slatinwine-dsh-sentience-audit-0.1.0.tgz
 ```
 
-### Alternative: install from npm (once published)
+### Alternative: install from npm (only if ever published there)
 
 ```sh
 dsh plugin --profile my-profile add @slatinwine/dsh-sentience-audit
 ```
+
+Publishing to a registry is optional for a DSH bundle, and this package has not
+been. Every route above needs no npm account, no registry and no login.
 
 ### Alternative: install from Git
 

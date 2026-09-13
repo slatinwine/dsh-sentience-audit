@@ -124,11 +124,14 @@ contribute a composition layer rather than merely installing a dependency — a
 package without that declaration installs silently and adds no row, which is the
 failure worth checking for in `--dump-config`.
 
-### From npm (once published)
+### From npm (only if a release is ever published there)
 
 ```sh
 dsh plugin --profile my-profile add @slatinwine/dsh-sentience-audit
 ```
+
+Publishing to a registry is optional for a DSH bundle, and this package has not
+been. The routes above need no npm account, no registry, and no login.
 
 ### From Git (source, opt-in)
 

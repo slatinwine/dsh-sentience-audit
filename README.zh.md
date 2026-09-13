@@ -98,11 +98,14 @@ dsh plugin --profile my-profile add ./slatinwine-dsh-sentience-audit-0.1.0.tgz
 包内声明了 **`dsh.bundle.patch`**，这正是 `dsh plugin add` 会贡献组合层、而不是仅装一个依赖的原因——
 缺该声明的包会**静默装上且不添加任何行**，所以这一步值得在 `--dump-config` 里核对。
 
-### 从 npm 安装（发布之后）
+### 从 npm 安装（仅当将来真的发布到 registry 时）
 
 ```sh
 dsh plugin --profile my-profile add @slatinwine/dsh-sentience-audit
 ```
+
+对 DSH bundle 来说，发布到 registry 是可选的，本包并未发布。上面几条路径都**不需要 npm 账号、
+不需要 registry、不需要登录**。
 
 ### 从 Git 安装（源码路径，需显式放行）
 
