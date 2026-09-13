@@ -1,0 +1,88 @@
+{
+  "name": "@yourorg/dsh-sentience-audit",
+  "version": "0.1.0",
+  "description": "Audit a DeepSeek Harness session against the 14 consciousness indicator properties of Butlin, Long, Elmoznino, Bengio et al. (2023) and report an L1-L5 level",
+  "type": "module",
+  "license": "MIT",
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/yourorg/dsh-sentience-audit.git"
+  },
+  "main": "lib/index.js",
+  "types": "lib/types/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./lib/types/index.d.ts",
+      "default": "./lib/index.js"
+    },
+    "./client": {
+      "types": "./lib/types/client/index.d.ts",
+      "default": "./lib/client/index.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "lib/index.js",
+    "lib/core/**/*.js",
+    "lib/host/**/*.js",
+    "lib/client/**/*.js",
+    "lib/types/**/*.d.ts",
+    "cordis.patch.yml",
+    "README.md",
+    "README.zh.md",
+    "GETTING-STARTED.md",
+    "GETTING-STARTED.zh.md",
+    "LICENSE"
+  ],
+  "dsh": {
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    },
+    "client": {
+      "platform": "web",
+      "inject": [
+        "@deepseek-ai/dsh-client-ui-renderer",
+        "@deepseek-ai/dsh-client-ui-conversation"
+      ]
+    }
+  },
+  "keywords": [
+    "dsh",
+    "dsh-plugin",
+    "deepseek-harness",
+    "cordis",
+    "consciousness",
+    "ai-welfare",
+    "interpretability",
+    "agent-audit"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.json && tsc -p tsconfig.client.json && node scripts/fix-declarations.mjs",
+    "typecheck": "tsc -p tsconfig.json --noEmit && tsc -p tsconfig.client.json --noEmit && tsc -p tests/tsconfig.json",
+    "test": "npm run test:engine && npm run test:contract",
+    "test:engine": "node --no-warnings=ExperimentalWarning --experimental-strip-types tests/run.ts && node --no-warnings=ExperimentalWarning --experimental-strip-types tests/platform.ts",
+    "test:contract": "npm run build && node tests/contract.mjs && node tests/discrimination.mjs",
+    "test:watch": "vitest",
+    "test:vitest": "vitest run",
+    "verify:pack": "node scripts/verify-pack.mjs",
+    "prepare": "npm run build"
+  },
+  "peerDependencies": {
+    "@deepseek-ai/cordis": "^4.0.2",
+    "@deepseek-ai/dsh-tools": "^0.1.5-rc.2"
+  },
+  "devDependencies": {
+    "@deepseek-ai/cordis": "^4.0.2",
+    "@deepseek-ai/dsh-tools": "^0.1.5-rc.2",
+    "@types/node": "^22.10.0",
+    "@types/react": "^18.3.12",
+    "typescript": "^5.7.0",
+    "vitest": "^2.1.0"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

@@ -1,0 +1,17 @@
+# The dsh-sentience-audit bundle patch.
+#
+# Installed as a profile bundle, this contributes one row to the composition:
+# the Host half that registers the `sentience_audit` tool. The browser panel is
+# discovered separately — the package also declares `dsh.client`, so a
+# deployment that scans client packages serves `./client` and the panel renders
+# inside the latest `cordis_run` card.
+#
+# The row is a plain plugin row. It declares `inject: ['sessions']` itself, so
+# nothing needs configuring here; `tools` and `agents` are read optionally and a
+# deployment without a tool registry simply contributes nothing.
+#
+# Remove or disable this row to withdraw the tool without uninstalling.
+
+- insert:
+    - id: sentience-audit
+      name: '@yourorg/dsh-sentience-audit'

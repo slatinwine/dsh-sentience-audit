@@ -1,0 +1,15 @@
+# Normalize line endings in the repository, not in each working copy. Without
+# this, a Windows checkout commits CRLF and every POSIX contributor sees the
+# whole file as changed.
+* text=auto eol=lf
+
+# Windows-only scripts keep CRLF so they run from cmd.exe and PowerShell.
+*.cmd text eol=crlf
+
+# Binary assets are never touched.
+*.png binary
+*.jpg binary
+*.tgz binary
+
+# Keep diffs readable where generated or vendored files do appear.
+package-lock.json -diff linguist-generated
