@@ -42,9 +42,16 @@ et al. (2023), Table 1. So:
 ```sh
 npm install          # `prepare` builds lib/
 npm run typecheck    # host, client, and test configs
-npm test             # engine + contract + discrimination suites
-npm run verify:pack  # packs for real and checks the tarball's contents
+npm test             # docs + engine + contract + discrimination suites
+npm run verify:pack  # checks the package is publishable and installable
 ```
+
+`npm test` starts with `scripts/check-docs.mjs`, because the documentation is part
+of the deliverable here: it verifies that in-page anchors resolve, that links
+point at files that exist, that code fences are balanced, that no document
+carries encoding damage, and that each English/Chinese pair still has the same
+number of sections. A translation that quietly lost a section is the kind of
+regression nothing else in this repository would catch.
 
 Node ≥ 22.18.0 to run the suites, and Node ≥ 20 to *use* the package. Nothing
 else is required — no pnpm, no shell scripts, no native modules.
@@ -116,6 +123,11 @@ unverified, say so rather than implying coverage that does not exist.
 The package name appears in **two** places: `package.json` and the row inside
 `cordis.patch.yml`. `verify:pack` fails if they disagree, because a mismatch
 produces an install that resolves no composition layer.
+
+Publishing to a registry is optional for a DSH bundle, and this package has not
+been published: every install route in the README works without an npm account.
+If you do publish, note that a published version is never reusable — a mistake is
+fixed by publishing the next version, not by withdrawing the last one.
 
 ## License
 

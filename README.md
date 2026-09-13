@@ -243,6 +243,8 @@ npm run verify:pack      # checks the package is publishable and installable
 npm run test:vitest      # the same engine cases under Vitest
 ```
 
+Publishing is **not required** to use this package — see [Install](#install).
+
 `npm test` runs four suites:
 
 - **`tests/run.ts`** — engine invariants (29 assertions), including the one that

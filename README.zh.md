@@ -196,6 +196,8 @@ npm run verify:pack      # 校验包可发布、可安装
 npm run test:vitest      # 同一套引擎用例改用 Vitest 运行
 ```
 
+使用本包**不需要**发布到 npm——见[安装](#安装)。
+
 `npm test` 跑四个套件：
 
 - **`tests/run.ts`** —— 引擎不变量（29 条断言），其中最关键的一条是：纯文字轨迹必须判为 L1、满足指标为 0。

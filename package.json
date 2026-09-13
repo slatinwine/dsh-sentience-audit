@@ -62,9 +62,10 @@
   "scripts": {
     "build": "tsc -p tsconfig.json && tsc -p tsconfig.client.json && node scripts/fix-declarations.mjs",
     "typecheck": "tsc -p tsconfig.json --noEmit && tsc -p tsconfig.client.json --noEmit && tsc -p tests/tsconfig.json",
-    "test": "npm run test:engine && npm run test:contract",
+    "test": "node scripts/check-docs.mjs && npm run test:engine && npm run test:contract",
     "test:engine": "node --no-warnings=ExperimentalWarning tests/run.ts && node --no-warnings=ExperimentalWarning tests/platform.ts",
     "test:contract": "npm run build && node tests/contract.mjs && node tests/discrimination.mjs",
+    "test:docs": "node scripts/check-docs.mjs",
     "test:watch": "vitest",
     "test:vitest": "vitest run",
     "verify:pack": "node scripts/verify-pack.mjs",
