@@ -46,15 +46,20 @@ Windows、macOS、Linux 都支持，包内没有任何平台专属内容：无�
 
 ## 3. 安装
 
-### 推荐：从 npm 安装
+### 推荐：安装 release 附件里的 tarball
+
+本包**尚未发布到 npm registry**，所以请从 release 附件开始——下载
+`slatinwine-dsh-sentience-audit-0.1.0.tgz`：
+<https://github.com/slatinwine/dsh-sentience-audit/releases/latest>。
+
+它已含构建好的 `lib/`，所以**你机器上不构建任何东西，也不需要任何构建放行**。
+包内同时声明了 `dsh.bundle.patch`，这正是本次安装会贡献一个组合层（含一行）的原因：
 
 ```sh
-dsh plugin --profile my-profile add @slatinwine/dsh-sentience-audit
+dsh plugin --profile my-profile add ./slatinwine-dsh-sentience-audit-0.1.0.tgz
 dsh --profile my-profile --dump-config
 ```
 
-发布出去的包内已含构建好的 `lib/`，所以**你机器上不构建任何东西，也不需要任何构建放行**。
-包内同时声明了 `dsh.bundle.patch`，这正是本次安装会贡献一个组合层（含一行）的原因。
 **务必确认这一行出现在 dump 里**：
 
 ```yaml
@@ -70,13 +75,19 @@ dsh --profile my-profile --dump-config
 dsh --profile my-profile
 ```
 
-### alternative：本地 tarball
+### alternative：自己打出同一个 tarball
 
-同样是预构建产物，不经过 registry：
+从本仓库的检出目录执行 `npm pack`，得到的是同一个产物：
 
 ```sh
 npm pack                                   # 在包目录内执行
 dsh plugin --profile my-profile add ./slatinwine-dsh-sentience-audit-0.1.0.tgz
+```
+
+### alternative：从 npm 安装（发布之后）
+
+```sh
+dsh plugin --profile my-profile add @slatinwine/dsh-sentience-audit
 ```
 
 ### alternative：从 Git 安装
@@ -91,8 +102,8 @@ allowBuilds:
 ```
 
 然后重跑 `add`。**这次放行意味着「允许本包在安装时于你机器上执行代码」**，
-它运行在 agent 所用沙箱之外。建议钉住 commit（`github:slatinwine/dsh-sentience-audit#<sha>`），
-以免之后一次 push 悄悄改变实际执行内容。除非确实需要源码，否则请优先用 npm。
+它运行在 agent 所用沙箱之外。建议钉住 tag（`github:slatinwine/dsh-sentience-audit#v0.1.0`），
+以免之后一次 push 悄悄改变实际执行内容。除非确实需要源码，否则请优先用 tarball。
 
 ### 本地开发：用覆盖层直接加载
 

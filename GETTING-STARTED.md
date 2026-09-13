@@ -55,17 +55,22 @@ matters and how each is handled.
 
 ## 3. Install
 
-### Recommended: install from npm
+### Recommended: install the release tarball
+
+The package is **not on the npm registry yet**, so start from the asset attached
+to the release — download `slatinwine-dsh-sentience-audit-0.1.0.tgz` from
+<https://github.com/slatinwine/dsh-sentience-audit/releases/latest>.
+
+It already contains the built `lib/`, so **nothing builds on your machine and no
+build permission is needed**. It also declares `dsh.bundle.patch`, which is what
+makes the install contribute a composition layer containing one row:
 
 ```sh
-dsh plugin --profile my-profile add @slatinwine/dsh-sentience-audit
+dsh plugin --profile my-profile add ./slatinwine-dsh-sentience-audit-0.1.0.tgz
 dsh --profile my-profile --dump-config
 ```
 
-The published package already contains its built `lib/`, so **nothing builds on
-your machine and no build permission is needed**. It also declares
-`dsh.bundle.patch`, which is what makes the install contribute a composition
-layer containing one row. **Confirm the row appears** in the dump:
+**Confirm the row appears** in the dump:
 
 ```yaml
 - id: sentience-audit
@@ -81,13 +86,20 @@ Then start the profile:
 dsh --profile my-profile
 ```
 
-### Alternative: a local tarball
+### Alternative: build the same tarball yourself
 
-Same prebuilt artifact, no registry involved:
+From a checkout of this repository, `npm pack` produces a byte-equivalent
+artifact:
 
 ```sh
 npm pack                                   # in the package checkout
 dsh plugin --profile my-profile add ./slatinwine-dsh-sentience-audit-0.1.0.tgz
+```
+
+### Alternative: install from npm (once published)
+
+```sh
+dsh plugin --profile my-profile add @slatinwine/dsh-sentience-audit
 ```
 
 ### Alternative: install from Git
@@ -103,9 +115,9 @@ allowBuilds:
 ```
 
 Re-run the `add`. **That allowance is permission to execute this package's code on
-your machine at install time**, outside any sandbox the agent runs under. Pin a
-commit (`github:slatinwine/dsh-sentience-audit#<sha>`) so a later push cannot change
-what runs. Prefer npm unless you specifically need the source.
+your machine at install time**, outside any sandbox the agent runs under. Pin the
+tag (`github:slatinwine/dsh-sentience-audit#v0.1.0`) so a later push cannot change
+what runs. Prefer the tarball unless you specifically need the source.
 
 ### Local development: load it with an overlay
 

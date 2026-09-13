@@ -98,35 +98,42 @@ producing theatre.
 
 ## Install
 
-Two supported routes. **npm is the recommended one** — users install a
-prebuilt artifact and need no build permission at all. The Git route exists for
-people who want to track the source, and costs one explicit allowance; it is
-described at the end of this section.
+The package is **not on the npm registry yet**. Until it is, install the release
+tarball — it ships built `lib/`, so nothing compiles on your machine and no build
+permission is needed. The Git route is for tracking the source and costs one
+explicit allowance.
 
-### npm (recommended)
+### From a release (recommended)
 
 ```sh
-dsh plugin --profile my-profile add @slatinwine/dsh-sentience-audit
+# download slatinwine-dsh-sentience-audit-0.1.0.tgz from
+# https://github.com/slatinwine/dsh-sentience-audit/releases/latest, then
+dsh plugin --profile my-profile add ./slatinwine-dsh-sentience-audit-0.1.0.tgz
 dsh --profile my-profile --dump-config     # confirm the sentience-audit row is present
 ```
 
-The published tarball already contains `lib/`, so nothing builds on the user's
-machine. The package declares **`dsh.bundle.patch`**, which is what makes
-`dsh plugin add` contribute a composition layer rather than merely installing a
-dependency — a package without that declaration installs silently and adds no
-row, which is the failure worth checking for in `--dump-config`.
-
-A tarball works the same way if you would rather not use a registry:
+Or build the same tarball yourself from a checkout:
 
 ```sh
 npm pack                                   # author side, in the package
 dsh plugin --profile my-profile add ./slatinwine-dsh-sentience-audit-0.1.0.tgz
 ```
 
+The package declares **`dsh.bundle.patch`**, which is what makes `dsh plugin add`
+contribute a composition layer rather than merely installing a dependency — a
+package without that declaration installs silently and adds no row, which is the
+failure worth checking for in `--dump-config`.
+
+### From npm (once published)
+
+```sh
+dsh plugin --profile my-profile add @slatinwine/dsh-sentience-audit
+```
+
 ### From Git (source, opt-in)
 
 ```sh
-dsh plugin --profile my-profile add github:slatinwine/dsh-sentience-audit#<sha>
+dsh plugin --profile my-profile add github:slatinwine/dsh-sentience-audit#v0.1.0
 ```
 
 A Git install fetches **sources, not built artifacts**, and pnpm ≥ 10 refuses to

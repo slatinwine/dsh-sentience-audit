@@ -75,31 +75,39 @@ approachChanged('{"content":"A"}', '{"content":"B"}') // true  —— 真实改�
 
 ## 安装
 
-支持两条路径，**优先推荐 npm**——用户装到的是预构建产物，完全不需要任何构建放行。
-Git 路径留给想跟着源码走的人，代价是一次显式放行；见本节末尾。
+本包**尚未发布到 npm registry**。在那之前请用 release 附件里的 tarball——
+它内含构建好的 `lib/`，你机器上不编译任何东西，也不需要任何构建放行。
+Git 路径留给想跟着源码走的人，代价是一次显式放行。
 
-### npm（推荐）
+### 从 release 安装（推荐）
 
 ```sh
-dsh plugin --profile my-profile add @slatinwine/dsh-sentience-audit
+# 从 https://github.com/slatinwine/dsh-sentience-audit/releases/latest
+# 下载 slatinwine-dsh-sentience-audit-0.1.0.tgz，然后
+dsh plugin --profile my-profile add ./slatinwine-dsh-sentience-audit-0.1.0.tgz
 dsh --profile my-profile --dump-config     # 确认 sentience-audit 这一行存在
 ```
 
-发布的 tarball 内已含 `lib/`，用户机器上不构建任何东西。包内声明了 **`dsh.bundle.patch`**，
-这正是 `dsh plugin add` 会贡献组合层、而不是仅装一个依赖的原因——缺该声明的包会**静默装上且不添加任何行**，
-所以这一步值得在 `--dump-config` 里核对。
-
-不想用 registry 的话，tarball 方式等价：
+也可以从检出目录自己打出同一个 tarball：
 
 ```sh
-npm pack                                   # 作者侧，在包目录内执行
+npm pack                                   # 在包目录内执行
 dsh plugin --profile my-profile add ./slatinwine-dsh-sentience-audit-0.1.0.tgz
+```
+
+包内声明了 **`dsh.bundle.patch`**，这正是 `dsh plugin add` 会贡献组合层、而不是仅装一个依赖的原因——
+缺该声明的包会**静默装上且不添加任何行**，所以这一步值得在 `--dump-config` 里核对。
+
+### 从 npm 安装（发布之后）
+
+```sh
+dsh plugin --profile my-profile add @slatinwine/dsh-sentience-audit
 ```
 
 ### 从 Git 安装（源码路径，需显式放行）
 
 ```sh
-dsh plugin --profile my-profile add github:slatinwine/dsh-sentience-audit#<sha>
+dsh plugin --profile my-profile add github:slatinwine/dsh-sentience-audit#v0.1.0
 ```
 
 Git 安装取到的是**源码而非构建产物**，而 pnpm ≥ 10 在显式放行前拒绝运行依赖的构建脚本。
@@ -111,7 +119,7 @@ allowBuilds:
 ```
 
 然后重跑 `add`。**请把这次放行理解为「允许该包在安装时于你机器上执行代码」**，
-它运行在 agent 所用沙箱之外——这正是运行 `prepare` 的含义。建议钉住 commit（`#<sha>`），
+它运行在 agent 所用沙箱之外——这正是运行 `prepare` 的含义。建议钉住 tag 或 commit，
 以免之后一次 push 悄悄改变实际执行的内容。本包的 `prepare` 是自包含的
 （两次 `tsc` 加一次声明文件改写，`typescript` 在 `devDependencies` 里），不会访问包外内容。
 
