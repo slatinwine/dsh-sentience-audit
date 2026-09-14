@@ -22,7 +22,7 @@
 | 入口 | 是什么 | 出现在哪 |
 | --- | --- | --- |
 | `sentience_audit` 工具 | 可由模型调用的工具，审计会话自身的轨迹 | Agent 的工具列表里 |
-| 审计面板 | 同一结果的可视视图 | 最新的 `cordis_run` 卡片内 |
+| 审计面板 | 同一结果的可视视图 | `sentience_audit` 工具卡片内 |
 
 两者调用同一份确定性代码，所以面板与工具输出不可能不一致。全程不调用模型，也不向外发送任何数据。
 
@@ -271,6 +271,19 @@ node -e "const p=require('@slatinwine/dsh-sentience-audit/package.json'); consol
 等待服务的行按设计是静默的。跑 `--dump-config` 找出从未激活的行；缺失的服务名会出现在面向 agent 的运行时诊断里。
 
 ### e. 面板不渲染
+
+Web 端会把 `exports["./client"]` 指向的文件**原样**发给浏览器，并且只有通过
+`__ModuleLoader__.load` 注册的模块才会挂载，所以包里必须带上预构建、已包装的
+`lib/client.js`，而不是裸的编译产物。检查安装副本：
+
+```sh
+node -e "const p=require('@slatinwine/dsh-sentience-audit/package.json'); console.log(p.exports['./client'].default)"
+head -c 200 node_modules/@slatinwine/dsh-sentience-audit/lib/client.js
+```
+
+文件必须以 `window.__ModuleLoader__.load({` 开头。若以 `import` 开头，说明安装的
+包早于 0.1.1——重新安装，或在源码检出里跑 `npm run build`（`bundle-client`
+一步负责生成它）。
 
 只有当包对客户端扫描可见、且 `./client` 构建产物存在时，客户端半边才会被发现。两项都查：
 

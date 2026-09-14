@@ -21,6 +21,14 @@ import { readSessionEvents, type AgentsLike, type SessionsLike } from './session
 export const TOOL_NAME = 'sentience_audit'
 
 /**
+ * Fence the machine-readable result travels in, appended after the markdown.
+ * The browser panel (`client/index.tsx`) parses this block out of the tool
+ * result's content items, so the panel and the model-facing text are the same
+ * payload. The model treats the fence as data and the markdown as the digest.
+ */
+const DATA_FENCE = '```sentience-audit-data'
+
+/**
  * Parameter schema. Optional properties omit `required` entirely: the DSL types
  * `required` as `true` only, so `required: false` is rejected.
  */
@@ -208,7 +216,10 @@ export function defineSentienceAuditTool(services: AuditToolServices) {
     output: {
       schema: OUTPUT_SCHEMA,
       render(_args, value) {
-        return [{ type: 'text', text: renderMarkdown(toOutcome(value)) }]
+        return [
+          { type: 'text', text: renderMarkdown(toOutcome(value)) },
+          { type: 'text', text: `${DATA_FENCE}\n${JSON.stringify(value)}\n\`\`\`` },
+        ]
       },
     },
     async execute(args, exec) {

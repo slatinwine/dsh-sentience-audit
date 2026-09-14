@@ -1,17 +1,26 @@
 /**
- * Client half: an audit panel for the current session.
+ * Client half: the audit panel rendered inside the `sentience_audit` tool card.
  *
- * Registered in `tool.view.cordis` — the Package-owned interactive region inside
- * the latest `cordis_run` card — so it appears in the conversation flow beside
- * the run that produced it.
+ * Registered in `tool.call.toolview` with the tool's name as the key — the slot
+ * static client plugins use to customize how their own tools render (the same
+ * contract `@deepseek-ai/dsh-client-ui-deliverables` uses for its `present`
+ * tool). `tool.view.cordis` would be wrong here: that slot belongs to the
+ * dynamic-package `cordis_run` card, which a static bundle plugin never
+ * produces.
  *
- * The panel never reimplements the rubric: it asks the host for the result, so
- * the browser view and the model-facing tool output can never disagree.
+ * The panel never reimplements the rubric: it renders the tool's own result.
+ * The host half appends a fenced ```sentience-audit-data JSON block to the
+ * result it returns; this panel parses that block out of `block.content`, so
+ * the browser view and the model-facing output are the same payload and can
+ * never disagree. A static client bundle has no `host` bridge, no `styles`
+ * helper and no remote channel — those names exist only inside dynamic
+ * (`cordis_define`) browser halves — so styles are injected as a plain
+ * `<style>` tag and no host call is made.
  *
  * @module dsh-sentience-audit/client
  */
 
-import { useEffect, useState, type ReactElement } from 'react'
+import type { ReactElement } from 'react'
 
 import type { AuditOutcome } from '../core/types.ts'
 
@@ -20,25 +29,39 @@ interface SlotsService {
   inject(name: string, callback: () => unknown): unknown
   register(
     options: { name: string; key?: string },
-    render: (props: { sessionId?: string }) => ReactElement,
+    render: (props: ToolViewProps) => ReactElement,
   ): unknown
-}
-
-/** Structural view of the browser half's host bridge. */
-interface HostBridge {
-  call(method: string, args: unknown): Promise<unknown>
 }
 
 /** Cordis client context shape this plugin uses. */
 interface ClientContext {
-  get(name: string): unknown
+  slots: SlotsService
 }
 
-/** Stylesheet helper injected by the client runtime. */
-declare const styles: { insert(css: string): () => void }
+/** One content item of a settled tool-result block. */
+interface ToolContentItem {
+  type?: string
+  text?: string
+}
 
-/** Package-private host bridge injected by the client runtime. */
-declare const host: HostBridge
+/** Props the tool-call view slot hands a registered row. */
+interface ToolViewProps {
+  /** Present on settled calls; running calls carry raw args instead. */
+  block?: {
+    content?: ToolContentItem[]
+    isError?: boolean
+    error?: { message?: string; name?: string } | null
+  }
+}
+
+/** The tool whose card this panel customizes. Must match `host/tool.ts`. */
+const TOOL_NAME = 'sentience_audit'
+
+/** Fence the host half wraps the machine-readable result in. */
+const DATA_FENCE = '```sentience-audit-data'
+
+/** Tag for the injected stylesheet, namespaced per package. */
+const CSS_TAG = '@slatinwine/dsh-sentience-audit/panel.css'
 
 const LEVEL_TONES: readonly string[] = ['#8a8f98', '#5b8def', '#3f9e7a', '#c08a2e', '#a855f7']
 
@@ -63,18 +86,57 @@ const CSS = `
 .sa-na{color:#c08a2e}
 .sa-kind{opacity:.7;white-space:nowrap}
 .sa-note{opacity:.62;font-size:11px}
-.sa-btn{border:1px solid var(--dsh-border-subtle,rgba(127,127,127,.4));background:transparent;color:inherit;border-radius:6px;padding:3px 10px;cursor:pointer;font-size:12px}
 .sa-err{color:#e5534b}
+.sa-raw{white-space:pre-wrap;word-break:break-word;opacity:.8}
 `
 
 /** Stable Cordis plugin name (client half). */
 export const name = 'sentience-audit-client'
 
-/** Storage for the panel during a render pass. */
-type PanelState =
-  | { phase: 'loading' }
-  | { phase: 'ready'; data: AuditOutcome }
-  | { phase: 'error'; message: string }
+/** Services this client plugin requires from the page context. */
+export const inject = ['slots']
+
+/** Insert the panel stylesheet once, following the platform's tag convention. */
+function insertStyles(): void {
+  if (typeof document === 'undefined') return
+  if (document.querySelector(`style[data-plugin-css="${CSS_TAG}"]`) !== null) return
+  const tag = document.createElement('style')
+  tag.dataset.plugin = '@slatinwine/dsh-sentience-audit'
+  tag.dataset.pluginCss = CSS_TAG
+  tag.textContent = CSS
+  document.head.appendChild(tag)
+}
+
+/** Pull the fenced JSON payload the host half appends to its result. */
+function extractPayload(block: ToolViewProps['block']): AuditOutcome | null {
+  const content = block?.content
+  if (!Array.isArray(content)) return null
+  const text = content
+    .map((item) => (typeof item === 'string' ? item : (item?.text ?? '')))
+    .join('\n')
+  const start = text.indexOf(DATA_FENCE)
+  if (start === -1) return null
+  const from = text.indexOf('\n', start)
+  if (from === -1) return null
+  const end = text.indexOf('\n```', from)
+  if (end === -1) return null
+  try {
+    const value: unknown = JSON.parse(text.slice(from + 1, end))
+    if (value === null || typeof value !== 'object') return null
+    return value as AuditOutcome
+  } catch {
+    return null
+  }
+}
+
+/** Plain text of the tool result, for the no-payload fallback. */
+function contentText(block: ToolViewProps['block']): string {
+  const content = block?.content
+  if (!Array.isArray(content)) return ''
+  return content
+    .map((item) => (typeof item === 'string' ? item : (item?.text ?? '')))
+    .join('\n')
+}
 
 /**
  * Register the panel.
@@ -82,76 +144,59 @@ type PanelState =
  * @param ctx - the client Cordis context.
  */
 export function apply(ctx: ClientContext): void {
-  const slots = ctx.get('slots') as SlotsService | undefined
-  if (slots === undefined) return
-
-  styles.insert(CSS)
-
-  slots.inject('tool.view.cordis', () =>
-    slots.register({ name: 'tool.view.cordis', key: 'self' }, (props) => {
-      const sessionId = typeof props.sessionId === 'string' ? props.sessionId : ''
-      const [state, setState] = useState<PanelState>({ phase: 'loading' })
-
-      const run = (): void => {
-        setState({ phase: 'loading' })
-        host
-          .call('sentience-audit', { sessionId })
-          .then((value) => {
-            const data = value as AuditOutcome
-            if (data !== null && typeof data === 'object' && data.ok === false) {
-              setState({ phase: 'error', message: data.error })
-              return
-            }
-            setState({ phase: 'ready', data })
-          })
-          .catch((error: unknown) => {
-            const message = error instanceof Error ? error.message : String(error)
-            setState({ phase: 'error', message })
-          })
-      }
-
-      // `run` is recreated per render but only closes over `sessionId` and a
-      // stable setter, so keying the effect on `sessionId` is sufficient.
-      useEffect(() => {
-        run()
-      }, [sessionId])
-
-      return (
-        <div className="sa-panel">
-          <div className="sa-head">
-            <span>意识指标审计</span>
-            <span className="sa-sub">Sentience Indicator Audit · L1–L5</span>
-          </div>
-          {state.phase === 'loading' ? (
-            <div className="sa-note">正在读取会话轨迹并复算 14 项指标…</div>
-          ) : null}
-          {state.phase === 'error' ? (
-            <>
-              <div className="sa-err">{state.message}</div>
-              <button className="sa-btn" onClick={run}>
-                重试
-              </button>
-            </>
-          ) : null}
-          {state.phase === 'ready' ? (
-            <AuditReport data={state.data} onRerun={run} />
-          ) : null}
-        </div>
-      )
-    }),
+  insertStyles()
+  ctx.slots.inject('tool.call.toolview', () =>
+    ctx.slots.register({ name: 'tool.call.toolview', key: TOOL_NAME }, AuditRow),
   )
 }
 
+/** Render the panel body for one `sentience_audit` tool call. */
+function AuditRow(props: ToolViewProps): ReactElement {
+  const { block } = props
+
+  // Running calls carry args rather than a settled `kind`-tagged block.
+  if (block === undefined || !('content' in (block as object))) {
+    return (
+      <div className="sa-panel">
+        <div className="sa-note">正在读取会话轨迹并复算 14 项指标…</div>
+      </div>
+    )
+  }
+
+  if (block.isError) {
+    const message = block.error?.message ?? '审计失败'
+    return (
+      <div className="sa-panel">
+        <div className="sa-err">{message}</div>
+      </div>
+    )
+  }
+
+  const data = extractPayload(block)
+  if (data === null) {
+    // Older tool results without the fenced payload still show their text.
+    return (
+      <div className="sa-panel">
+        <div className="sa-note">未找到结构化审计数据，显示原始结果：</div>
+        <div className="sa-raw">{contentText(block)}</div>
+      </div>
+    )
+  }
+
+  return <AuditReport data={data} />
+}
+
 /** Render one completed audit. */
-function AuditReport(props: { data: AuditOutcome; onRerun: () => void }): ReactElement {
-  const { data, onRerun } = props
+function AuditReport(props: { data: AuditOutcome }): ReactElement {
+  const { data } = props
   if (data.ok === false) return <div className="sa-err">{data.error}</div>
 
   const tone = LEVEL_TONES[Math.min(4, Math.max(0, data.level - 1))] ?? LEVEL_TONES[0]
 
   return (
-    <>
+    <div className="sa-panel">
       <div className="sa-head">
+        <span>意识指标审计</span>
         <span className="sa-badge" style={{ background: tone }}>
           {data.levelLabel}
         </span>
@@ -213,10 +258,6 @@ function AuditReport(props: { data: AuditOutcome; onRerun: () => void }): ReactE
         依据 Butlin/Long/Bengio 等 (2023)《Consciousness in Artificial Intelligence》的 14 项指标属性；
         只采信可复算的轨迹结构与架构事实。
       </div>
-
-      <button className="sa-btn" onClick={onRerun}>
-        按最新轨迹重算
-      </button>
-    </>
+    </div>
   )
 }

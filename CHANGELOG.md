@@ -4,6 +4,24 @@ Notable changes, newest first. This project follows [semantic
 versioning](https://semver.org/); the rubric revision it scores against is named
 in every result, so a rubric change is always a breaking change.
 
+## 0.1.1
+
+**The panel ships as a wrapped client bundle.** The web app serves
+`exports["./client"]` to the browser as-is and silently drops any module that
+does not register via `__ModuleLoader__.load`, so the client half now builds
+to a prebuilt `lib/client.js` (esbuild, react kept external) instead of raw
+tsc ESM, and the package entry points at it. A tsc-compiled `lib/client/`
+directory was served raw, never registered, and the panel never mounted.
+
+**The panel renders the tool card, not a cordis run.** Registration moved
+from `tool.view.cordis` — the dynamic-package `cordis_run` card, which a
+static bundle plugin never produces — to `tool.call.toolview` keyed
+`sentience_audit`. The panel parses a fenced ` ```sentience-audit-data `
+JSON block the host appends to the tool result, so the browser view and the
+model-facing output stay the same payload. The invented `styles`/`host`
+runtime symbols (they exist only inside `cordis_define` browser halves) are
+gone; styles inject as a plain `<style>` tag.
+
 ## 0.1.0 — unreleased
 
 First release.

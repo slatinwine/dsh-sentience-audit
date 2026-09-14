@@ -170,9 +170,10 @@ deployment has no tool registry it contributes nothing and does not fail the mou
 
 **Client plane** — the browser panel is a separate build of the same package. Its
 `package.json` carries the `dsh.client` declaration, so a deployment that scans client packages
-discovers and serves `./client` like any first-party UI package; the panel renders inside the latest
-`cordis_run` card. The panel asks the host for the audit, so the browser view and the model-facing
-tool output can never disagree.
+discovers and serves `./client` like any first-party UI package; the panel renders inside the
+`sentience_audit` tool card. The panel renders the tool's own result — the host appends a fenced
+`sentience-audit-data` JSON block to the result and the panel parses it — so the browser view
+and the model-facing tool output can never disagree.
 
 ## Use
 

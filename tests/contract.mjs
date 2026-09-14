@@ -154,21 +154,26 @@ check('does not throw without a registry', threw === false)
 section('client bundle carries the slot contract')
 {
   // The bundle cannot be imported here (it needs React and the DSH client
-  // runtime), so assert on the built artifact instead: the pieces the client
-  // loader depends on must be present in what actually ships.
+  // runtime), so assert on the built artifact instead. What ships is
+  // `lib/client.js` — the prebuilt, `__ModuleLoader__`-wrapped bundle the web
+  // app serves for `exports["./client"]`; the raw tsc output in
+  // `lib/client/` is only its build input.
   const { readFileSync } = await import('node:fs')
   let built = ''
   try {
-    built = readFileSync(new URL('../lib/client/index.js', import.meta.url), 'utf8')
+    built = readFileSync(new URL('../lib/client.js', import.meta.url), 'utf8')
     check('client bundle exists and is non-empty', built.length > 1000)
   } catch (error) {
     check('client bundle exists and is non-empty', false, error.message)
   }
-  check('registers into the cordis tool-view slot', built.includes('tool.view.cordis'))
-  check('binds the self key the guard requires', built.includes("\"self\"") || built.includes("'self'"))
+  check('registers via the module loader wrapper', built.startsWith('window.__ModuleLoader__.load({'))
+  check('declares the package id in the wrapper', built.includes('id: "@slatinwine/dsh-sentience-audit"'))
+  check('registers into the tool-call view slot', built.includes('tool.call.toolview'))
+  check('binds the sentience_audit tool key', built.includes('sentience_audit'))
+  check('ships no raw ESM exports', !/(^|\n)\s*export\s+(const|function|default|\{)/.test(built))
   check('exports a client plugin name', built.includes('sentience-audit-client'))
-  check('keeps react external rather than inlining it', /from ["']react["']/.test(built))
-  check('imports the jsx runtime as an external', /from ["']react\/jsx-runtime["']/.test(built))
+  check('keeps react external rather than inlining it', !built.includes('react.development') && !built.includes('SECRET_INTERNALS'))
+  check('imports the jsx runtime as an external', built.includes('require("react/jsx-runtime")'))
 }
 
 console.log(`\n${failed === 0 ? 'PASS' : 'FAIL'} — ${passed} passed, ${failed} failed`)

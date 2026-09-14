@@ -1,6 +1,6 @@
 {
   "name": "@slatinwine/dsh-sentience-audit",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Audit a DeepSeek Harness session against the 14 consciousness indicator properties of Butlin, Long, Elmoznino, Bengio et al. (2023) and report an L1-L5 level",
   "type": "module",
   "license": "MIT",
@@ -20,7 +20,7 @@
     },
     "./client": {
       "types": "./lib/types/client/index.d.ts",
-      "default": "./lib/client/index.js"
+      "default": "./lib/client.js"
     },
     "./package.json": "./package.json"
   },
@@ -28,6 +28,7 @@
     "lib/index.js",
     "lib/core/**/*.js",
     "lib/host/**/*.js",
+    "lib/client.js",
     "lib/client/**/*.js",
     "lib/types/**/*.d.ts",
     "cordis.patch.yml",
@@ -60,7 +61,7 @@
     "agent-audit"
   ],
   "scripts": {
-    "build": "tsc -p tsconfig.json && tsc -p tsconfig.client.json && node scripts/fix-declarations.mjs",
+    "build": "tsc -p tsconfig.json && tsc -p tsconfig.client.json && node scripts/fix-declarations.mjs && node scripts/bundle-client.mjs",
     "typecheck": "tsc -p tsconfig.json --noEmit && tsc -p tsconfig.client.json --noEmit && tsc -p tests/tsconfig.json",
     "test": "node scripts/check-docs.mjs && npm run test:engine && npm run test:contract",
     "test:engine": "node --no-warnings=ExperimentalWarning tests/run.ts && node --no-warnings=ExperimentalWarning tests/platform.ts",
@@ -80,6 +81,7 @@
     "@deepseek-ai/dsh-tools": "^0.1.5-rc.2",
     "@types/node": "^22.10.0",
     "@types/react": "^18.3.12",
+    "esbuild": "^0.25.0",
     "typescript": "^5.7.0",
     "vitest": "^2.1.0"
   },

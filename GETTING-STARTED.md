@@ -23,7 +23,7 @@ Two surfaces over one engine:
 | Surface | What it is | Where it shows up |
 | --- | --- | --- |
 | `sentience_audit` tool | A model-callable tool that audits a session's own trajectory | In the agent's tool list |
-| Audit panel | A read-only view of the same result | Inside the latest `cordis_run` card |
+| Audit panel | A read-only view of the same result | Inside the `sentience_audit` tool card |
 
 Both call the same deterministic code, so the panel and the tool can never
 disagree. Nothing calls a model, and nothing leaves your machine.
@@ -317,16 +317,19 @@ runtime diagnostics.
 
 ### e. The panel does not render
 
-The client half is discovered only if the package is visible to the client
-scanner and its `./client` build exists. Check both:
+The web app serves `exports["./client"]` to the browser **as-is** and only
+modules that register via `__ModuleLoader__.load` mount, so what must ship is
+the prebuilt, wrapped bundle `lib/client.js` — not raw compiled ESM. Check the
+installed copy:
 
 ```sh
-node -e "const p=require('@slatinwine/dsh-sentience-audit/package.json'); console.log(p.dsh?.client, p.exports['./client'])"
-ls node_modules/@slatinwine/dsh-sentience-audit/lib/client/
+node -e "const p=require('@slatinwine/dsh-sentience-audit/package.json'); console.log(p.exports['./client'].default)"
+head -c 200 node_modules/@slatinwine/dsh-sentience-audit/lib/client.js
 ```
 
-If announcements mention `client bundle not found`, the published package is
-missing `lib/client/` — `npm run build` writes it, and `prepack` runs that build.
+The file must start with `window.__ModuleLoader__.load({`. If it starts with
+`import`, the installed package predates 0.1.1 — reinstall, or run
+`npm run build` from a checkout (the `bundle-client` step writes it).
 
 ## 9. Uninstall
 
