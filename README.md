@@ -15,75 +15,26 @@ Audit a [DeepSeek Harness](https://github.com/deepseek-ai/deepseek-harness) sess
 
 **Start here:** [`GETTING-STARTED.md`](./GETTING-STARTED.md) · 中文: [`GETTING-STARTED.zh.md`](./GETTING-STARTED.zh.md)
 **See a real report:** [`docs/EXAMPLE-REPORT.md`](./docs/EXAMPLE-REPORT.md)
-**How verdicts are reached:** [below](#why-the-verdicts-are-structural) · **Contributing:** [`CONTRIBUTING.md`](./CONTRIBUTING.md)
+**Contributing:** [`CONTRIBUTING.md`](./CONTRIBUTING.md)
 
 - **Rubric:** [Consciousness in Artificial Intelligence: Insights from the Science of Consciousness](https://arxiv.org/abs/2308.08708)
-  (arXiv:2308.08708), Table 1 — 14 indicator properties derived from recurrent processing theory,
+  (arXiv:2308.08708), Table 1 — 14 indicator properties drawn from recurrent processing theory,
   global workspace theory, computational higher-order theories, attention schema theory, predictive
   processing, and agency/embodiment.
-- **Method:** deterministic. No model call, no LLM judge, no network. The same event log always
-  produces the same result, so scores are reproducible and diffable.
+- **Method:** deterministic and platform-independent. No model call, no LLM judge, no network. The
+  same event log always produces the same result, on any OS.
 - **Honest ceiling:** three properties cannot be answered from a transcript and are reported
   `not-assessable` rather than guessed. `AST-1` gates L5, so this tool effectively cannot award L5.
 
-## Platforms
-
-Windows, macOS and Linux are all supported. Three places in the analyzer are
-platform-sensitive, and each is handled from the trace rather than from the host
-it happens to run on:
-
-| Concern | How it is handled |
-| --- | --- |
-| Shell tool names | `pwsh` / `powershell` on Windows and `bash` / `sh` / `zsh` / `dash` on macOS and Linux are all one specialised shell module |
-| Read-back probes | Both spellings are recognized: `cat`, `head`, `tail`, `wc`, `stat`, `sed`, `find`, `jq` … and `Get-Content`, `Select-String`, `Test-Path`, `Get-ChildItem` … |
-| Path case | Folded only for Windows-shaped paths. On a POSIX filesystem `A.ts` and `a.ts` are two different files, and treating them as one would fuse distinct artifacts |
-
-Case handling deliberately infers the convention **from the path's own shape**
-(backslashes or a drive letter mean Windows) instead of reading
-`process.platform`. A score is then a pure function of the event log: the same
-session audited on macOS and on Windows returns the same number, which is what
-makes the result diffable and reproducible. The cost is that a session using
-POSIX separators on Windows would be read as case-sensitive — a rare combination
-that can only report *fewer* artifacts, never invent them.
-
-`tests/platform.ts` covers all three, including a POSIX trajectory that must
-produce the same structural signals as its Windows counterpart.
-
 ## Why the verdicts are structural
 
-An early revision scored indicators from the model's **wording** — counting phrases like
-"assume", "verify", or "trade-off". That measured vocabulary, not architecture, and it inflated
-every score: a transcript that merely *discussed* consciousness scored as if it exhibited it.
+An earlier revision scored indicators from the model's **wording** — counting phrases like
+"assume" or "verify". That measured vocabulary, not architecture, and it inflated every score: a
+transcript that merely *discussed* consciousness scored as if it exhibited it.
 
-This package therefore reads **only replayable trace structure**:
-
-| Signal | What it actually measures |
-| --- | --- |
-| `dependentCalls` | A later tool call whose arguments carry a path the previous result surfaced — the observable form of "the result was consumed" |
-| `moduleSuccessions` | Consecutive calls that switch specialised module family |
-| `recoveries` | Tool failures after which the trace **genuinely** changed approach (see below) |
-| `artifactReuse` | Paths the session itself wrote, later consumed by a different tool |
-| `selfReadbacks` | Reads of a path the session itself wrote |
-| `injectionLoops` | Produce-then-observe loops back through an input module |
-
-### Telling recovery from a retry
-
-`recoveries` gates L4, so it cannot be satisfied by any string difference. Two
-calls are the **same attempt** when their argument blobs are structurally equal
-after key sorting — a pure re-serialization is not a new approach. When a blob
-does not parse as JSON (a large payload the session truncated), the comparison
-falls back to how much *content* the two blobs share, never to shared vocabulary:
-identifiers repeat across a codebase, so a whole-file rewrite can share almost
-every token while being an entirely different attempt.
-
-```ts
-import { approachChanged } from '@slatinwine/dsh-sentience-audit'
-
-approachChanged('{"a":1,"b":2}', '{"b":2,"a":1}')   // false — same payload
-approachChanged('{"content":"A"}', '{"content":"B"}') // true  — real change
-```
-
-Both directions are covered by `tests/discrimination.mjs`.
+This package therefore reads **only replayable trace structure** — whether a later call consumed a
+path an earlier result surfaced, whether the session wrote files and read them back, whether it
+genuinely changed approach after a failure. Scores are reproducible and diffable.
 
 Properties that need **inspection of internal representations** are reported as
 **`not-assessable`** rather than guessed, and are excluded from the satisfied count:
@@ -98,82 +49,18 @@ producing theatre.
 
 ## Install
 
-The package is **not on the npm registry yet**. Until it is, install the release
-tarball — it ships built `lib/`, so nothing compiles on your machine and no build
-permission is needed. The Git route is for tracking the source and costs one
-explicit allowance.
-
-### From a release (recommended)
+The package is **not on the npm registry yet**, so install the release tarball (it ships built
+`lib/` — nothing compiles on your machine):
 
 ```sh
-# download slatinwine-dsh-sentience-audit-0.1.0.tgz from
+# download slatinwine-dsh-sentience-audit-0.1.1.tgz from
 # https://github.com/slatinwine/dsh-sentience-audit/releases/latest, then
-dsh plugin --profile my-profile add ./slatinwine-dsh-sentience-audit-0.1.0.tgz
+dsh plugin --profile my-profile add ./slatinwine-dsh-sentience-audit-0.1.1.tgz
 dsh --profile my-profile --dump-config     # confirm the sentience-audit row is present
 ```
 
-Or build the same tarball yourself from a checkout:
-
-```sh
-npm pack                                   # author side, in the package
-dsh plugin --profile my-profile add ./slatinwine-dsh-sentience-audit-0.1.0.tgz
-```
-
-The package declares **`dsh.bundle.patch`**, which is what makes `dsh plugin add`
-contribute a composition layer rather than merely installing a dependency — a
-package without that declaration installs silently and adds no row, which is the
-failure worth checking for in `--dump-config`.
-
-### From npm (only if a release is ever published there)
-
-```sh
-dsh plugin --profile my-profile add @slatinwine/dsh-sentience-audit
-```
-
-Publishing to a registry is optional for a DSH bundle, and this package has not
-been. The routes above need no npm account, no registry, and no login.
-
-### From Git (source, opt-in)
-
-```sh
-dsh plugin --profile my-profile add github:slatinwine/dsh-sentience-audit#v0.1.0
-```
-
-A Git install fetches **sources, not built artifacts**, and pnpm ≥ 10 refuses to
-run a dependency's build script until it is allowlisted. The first `add` fails
-and names the package key to copy into the profile's `pnpm-workspace.yaml`:
-
-```yaml
-allowBuilds:
-  '@slatinwine/dsh-sentience-audit': true
-```
-
-Re-run the `add` afterwards. **Treat that allowance as permission to execute this
-package's code on your machine at install time**, outside any sandbox the agent
-runs under — that is what running `prepare` means. Pin a commit (`#<sha>`) so a
-later push cannot change what runs. This package's `prepare` is self-contained
-(two `tsc` invocations plus a declaration rewrite, with `typescript` in
-`devDependencies`); it does not reach outside the package.
-
-### Host and client planes
-
-**Host plane** — the row the bundle supplies. Put the same row in a preset instead if only one
-session should gain the tool:
-
-```yaml
-- id: sentience-audit
-  name: '@slatinwine/dsh-sentience-audit'
-```
-
-The plugin declares `inject: ['sessions']` and reads `tools` and `agents` optionally. If the
-deployment has no tool registry it contributes nothing and does not fail the mount.
-
-**Client plane** — the browser panel is a separate build of the same package. Its
-`package.json` carries the `dsh.client` declaration, so a deployment that scans client packages
-discovers and serves `./client` like any first-party UI package; the panel renders inside the
-`sentience_audit` tool card. The panel renders the tool's own result — the host appends a fenced
-`sentience-audit-data` JSON block to the result and the panel parses it — so the browser view
-and the model-facing tool output can never disagree.
+Full walkthrough — including verifying the install, troubleshooting, and
+uninstalling — lives in [`GETTING-STARTED.md`](./GETTING-STARTED.md).
 
 ## Use
 
@@ -195,15 +82,7 @@ Result (abridged):
 | HOT-1 生成式 / 自上而下 / 带噪的知觉模块 | 无法评估 | 轨迹结构 | 需要检查输入模块内部… |
 ```
 
-Or programmatically:
-
-```ts
-import { assess } from '@slatinwine/dsh-sentience-audit'
-
-const result = assess({ sessionId: 'session-1', events })
-console.log(result.level, result.levelLabel)   // 3, 'L3 · 全局工作空间'
-console.log(result.indicators)                 // one verdict per rubric entry
-```
+The same result renders as a structured panel inside the tool card.
 
 ## The levels
 
@@ -221,60 +100,6 @@ session cannot climb by accumulating unrelated satisfied indicators.
 A harness with a wide toolset that writes files, reads them back, and recovers from failures
 typically lands at **L2–L3**. That is the honest ceiling for an architecture whose attention
 schema cannot be verified from its transcript.
-
-## Exports
-
-| Entry | Contents |
-| --- | --- |
-| `.` | Cordis host plugin (`name`, `inject`, `apply`) plus the audit engine: `assess`, `auditSession`, `auditEvents`, `RUBRIC`, `LEVELS`, `REQUIREMENTS`, `DISCLAIMER`, `renderMarkdown`, and the result types |
-| `./client` | The browser panel (built bundle) |
-
-## Development
-
-Requires **Node ≥ 22.18.0** to run the suites. The published package is compiled
-JavaScript and needs only Node ≥ 20; the higher floor is for the TypeScript test
-suites, which Node runs directly through type stripping.
-
-```sh
-npm install
-npm run build            # compiles host (tsconfig.json) and client (tsconfig.client.json)
-npm run typecheck        # host, client, and test configs
-npm test                 # engine invariants + platform parity + runtime contract
-npm run verify:pack      # checks the package is publishable and installable
-npm run test:vitest      # the same engine cases under Vitest
-```
-
-Publishing is **not required** to use this package — see [Install](#install).
-
-`npm test` runs four suites:
-
-- **`tests/run.ts`** — engine invariants (29 assertions), including the one that
-  matters most: a prose-only trajectory must score L1 with zero satisfied
-  indicators.
-- **`tests/platform.ts`** — Windows/macOS/Linux parity (24 assertions): a POSIX
-  trajectory yields the same signals as its Windows counterpart, POSIX observation
-  verbs count as probes, and case follows the filesystem.
-- **`tests/contract.mjs`** — runs against the **built** `lib/`, so it exercises
-  the real `defineTool` DSL validator and the real module graph: the schema is
-  accepted at runtime, the tool audits a fake session end to end, session
-  resolution works from an explicit id, from the executing agent, and fails with
-  a teaching error when neither is available, and `apply()` registers through a
-  tool registry while degrading safely without one.
-- **`tests/discrimination.mjs`** — the recovery-versus-retry rule (16 assertions).
-
-Sources import each other with explicit `.ts` extensions, which lets Node run them
-directly. `tsc`'s `rewriteRelativeImportExtensions` rewrites those specifiers to
-`.js` in the emitted JavaScript, but **not** in the generated `.d.ts` files — so
-`scripts/fix-declarations.mjs` performs the same rewrite on `lib/types/**`. Without
-it the published declarations would point at `./core/types.ts`, which a consumer's
-TypeScript cannot resolve; that breakage stays hidden as long as `skipLibCheck` is
-on, which is exactly why the build does the rewrite instead of relying on it.
-
-The suites run without a test framework, which is what makes them usable in a
-constrained environment; `test:vitest` is there for a normal shell.
-
-`prepare` builds automatically, so `npm publish` cannot ship a stale or missing
-`lib/`.
 
 ## Limitations
 
