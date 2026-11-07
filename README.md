@@ -115,3 +115,7 @@ schema cannot be verified from its transcript.
 
 MIT. The rubric and quoted property wording come from the cited report, licensed
 [CC BY-NC-SA 4.0](http://creativecommons.org/licenses/by-nc-sa/4.0/); see the report for its terms.
+
+## 关注公众号
+
+![公众号二维码](qrcode.jpg)
